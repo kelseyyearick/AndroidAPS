@@ -23,6 +23,7 @@
         <item>@string/ro_lang</item>
         <item>@string/ru_lang</item>
         <item>@string/sv_lang</item>
+        <item>@string/ga_lang</item>
     </string-array>
     <string-array name="languagesValues" translatable="false">
         <item>en</item>
@@ -37,6 +38,7 @@
         <item>ro</item>
         <item>ru</item>
         <item>sv</item>
+        <item>ga</item>
     </string-array>
 
     <string-array name="ageArray">
