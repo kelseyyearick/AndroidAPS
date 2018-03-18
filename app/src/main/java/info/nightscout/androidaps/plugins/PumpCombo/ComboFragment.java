@@ -17,6 +17,7 @@ import com.squareup.otto.Subscribe;
 import org.apache.commons.lang3.StringUtils;
 
 import info.nightscout.androidaps.Config;
+import info.nightscout.androidaps.plugins.PumpCombo.data.ComboDataUtil;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.PumpState;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.history.Bolus;
 import info.nightscout.androidaps.MainApp;
@@ -41,6 +42,8 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
     private Button alertsButton;
     private Button tddsButton;
     private Button fullHistoryButton;
+    private TextView connectionErrors;
+    private ComboDataUtil comboDataUtil;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -55,6 +58,9 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
         lastConnectionView = (TextView) view.findViewById(R.id.combo_lastconnection);
         baseBasalRate = (TextView) view.findViewById(R.id.combo_base_basal_rate);
         tempBasalText = (TextView) view.findViewById(R.id.combo_temp_basal);
+        connectionErrors = (TextView) view.findViewById(R.id.combo_connection_error);
+
+        comboDataUtil = ComboDataUtil.getInstance();
 
         refreshButton = (Button) view.findViewById(R.id.combo_refresh_button);
         refreshButton.setOnClickListener(this);
@@ -70,6 +76,8 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
         fullHistoryButton = (Button) view.findViewById(R.id.combo_full_history_button);
         fullHistoryButton.setOnClickListener(this);
         fullHistoryButton.setOnLongClickListener(this);
+
+
 
         updateGUI();
         return view;
@@ -297,6 +305,10 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
                     }
                 }
                 tempBasalText.setText(tbrStr);
+
+                // connection errors
+                connectionErrors.setText(comboDataUtil.getErrorString());
+
             }
         });
     }

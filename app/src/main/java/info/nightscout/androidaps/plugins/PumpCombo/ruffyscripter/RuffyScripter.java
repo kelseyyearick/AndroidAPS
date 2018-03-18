@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import info.nightscout.androidaps.plugins.PumpCombo.data.ComboDataUtil;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.commands.ReadQuickInfoCommand;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.history.PumpHistoryRequest;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.commands.BolusCommand;
@@ -210,10 +211,12 @@ public class RuffyScripter implements RuffyCommands {
         try {
             log.debug("Disconnecting");
             ruffyService.doRTDisconnect();
+            ComboDataUtil.getInstance().clearErrors();
         } catch (RemoteException e) {
             // ignore
         } catch (Exception e) {
             log.warn("Disconnect not happy", e);
+            ComboDataUtil.getInstance().addError(e);
         }
     }
 
@@ -338,10 +341,12 @@ public class RuffyScripter implements RuffyCommands {
             } catch (CommandException e) {
                 log.error("CommandException while executing command", e);
                 PumpState pumpState = recoverFromCommandFailure();
+                ComboDataUtil.getInstance().addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } catch (Exception e) {
                 log.error("Unexpected exception communication with ruffy", e);
                 PumpState pumpState = recoverFromCommandFailure();
+                ComboDataUtil.getInstance().addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } finally {
                 Menu menu = this.currentMenu;
