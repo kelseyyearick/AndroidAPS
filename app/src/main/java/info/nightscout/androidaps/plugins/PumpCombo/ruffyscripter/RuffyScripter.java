@@ -211,12 +211,18 @@ public class RuffyScripter implements RuffyCommands {
         try {
             log.debug("Disconnecting");
             ruffyService.doRTDisconnect();
-            ComboDataUtil.getInstance().clearErrors();
+            try {
+                ComboDataUtil.getInstance().clearErrors();
+            }
+            catch(Exception ex)
+            {
+                log.error("Combo data util problem." + ex.getMessage(), ex);
+            }
         } catch (RemoteException e) {
             // ignore
         } catch (Exception e) {
             log.warn("Disconnect not happy", e);
-            ComboDataUtil.getInstance().addError(e);
+            addError(e);
         }
     }
 
@@ -281,9 +287,11 @@ public class RuffyScripter implements RuffyCommands {
                         log.debug("Executing " + cmd + " took " + (cmdEndTime - cmdStartTime) + "ms");
                     } catch (CommandException e) {
                         log.error("CommandException running command", e);
+                        addError(e);
                         activeCmd.getResult().success = false;
                     } catch (Exception e) {
                         log.error("Unexpected exception running cmd", e);
+                        addError(e);
                         activeCmd.getResult().success = false;
                     }
                 }, cmd.getClass().getSimpleName());
@@ -341,12 +349,12 @@ public class RuffyScripter implements RuffyCommands {
             } catch (CommandException e) {
                 log.error("CommandException while executing command", e);
                 PumpState pumpState = recoverFromCommandFailure();
-                ComboDataUtil.getInstance().addError(e);
+                addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } catch (Exception e) {
                 log.error("Unexpected exception communication with ruffy", e);
                 PumpState pumpState = recoverFromCommandFailure();
-                ComboDataUtil.getInstance().addError(e);
+                addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } finally {
                 Menu menu = this.currentMenu;
@@ -366,6 +374,19 @@ public class RuffyScripter implements RuffyCommands {
             }
         }
     }
+
+    private void addError(Exception e)
+    {
+        try
+        {
+            ComboDataUtil.getInstance().addError(e);
+        }
+        catch(Exception ex)
+        {
+            log.error("Combo data util problem." + ex.getMessage(), ex);
+        }
+    }
+
 
     private boolean runPreCommandChecks(Command cmd) {
         if (cmd instanceof ReadPumpStateCommand) {

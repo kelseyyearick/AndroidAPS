@@ -11,21 +11,16 @@ import java.util.Map;
 
 public class ComboDataUtil {
 
-    static Map<String,List<ErrorState>> errorMap = new HashMap<>();
+    Map<String,List<ErrorState>> errorMap = new HashMap<>();
 
     private static ComboDataUtil comboDataUtil = new ComboDataUtil();
 
     private ComboDataUtil()
     {
-
     }
 
     public static ComboDataUtil getInstance()
     {
-        if (comboDataUtil==null)
-        {
-            comboDataUtil = new ComboDataUtil();
-        }
         return comboDataUtil;
     }
 
@@ -33,7 +28,7 @@ public class ComboDataUtil {
     {
         String exceptionMsg = exception.getMessage();
 
-        if (errorMap.containsKey(exceptionMsg))
+        if (!errorMap.containsKey(exceptionMsg))
         {
             List<ErrorState> list = new ArrayList<>();
             list.add(createErrorState(exception));
@@ -56,7 +51,10 @@ public class ComboDataUtil {
 
     public void clearErrors()
     {
-        this.errorMap.clear();
+        if (errorMap!=null)
+            this.errorMap.clear();
+        else
+            this.errorMap = new HashMap<>();
     }
 
     public boolean isErrorPresent() {
