@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import info.nightscout.androidaps.plugins.PumpCombo.data.ComboDataUtil;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.commands.ReadQuickInfoCommand;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.history.PumpHistoryRequest;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.commands.BolusCommand;
@@ -196,10 +197,18 @@ public class RuffyScripter implements RuffyCommands {
         try {
             log.debug("Disconnecting");
             ruffyService.doRTDisconnect();
+            try {
+                ComboDataUtil.getInstance().clearErrors();
+            }
+            catch(Exception ex)
+            {
+                log.error("Combo data util problem." + ex.getMessage(), ex);
+            }
         } catch (RemoteException e) {
             // ignore
         } catch (Exception e) {
             log.warn("Disconnect not happy", e);
+            addError(e);
         }
     }
 
@@ -261,9 +270,11 @@ public class RuffyScripter implements RuffyCommands {
                         log.debug("Executing " + cmd + " took " + (cmdEndTime - cmdStartTime) + "ms");
                     } catch (CommandException e) {
                         log.error("CommandException running command", e);
+			addError(e);
                         cmd.getResult().success = false;
                     } catch (Exception e) {
                         log.error("Unexpected exception running cmd", e);
+			addError(e);
                         cmd.getResult().success = false;
                     }
                 }, cmd.getClass().getSimpleName());
@@ -328,10 +339,12 @@ public class RuffyScripter implements RuffyCommands {
             } catch (CommandException e) {
                 log.error("CommandException while executing command", e);
                 PumpState pumpState = recoverFromCommandFailure();
+                addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } catch (Exception e) {
                 log.error("Unexpected exception communication with ruffy", e);
                 PumpState pumpState = recoverFromCommandFailure();
+                addError(e);
                 return activeCmd.getResult().success(false).state(pumpState);
             } finally {
                 Menu menu = this.currentMenu;
@@ -350,6 +363,19 @@ public class RuffyScripter implements RuffyCommands {
             }
         }
     }
+
+    private void addError(Exception e)
+    {
+        try
+        {
+            ComboDataUtil.getInstance().addError(e);
+        }
+        catch(Exception ex)
+        {
+            log.error("Combo data util problem." + ex.getMessage(), ex);
+        }
+    }
+
 
     private boolean runPreCommandChecks(Command cmd) {
         if (cmd instanceof ReadPumpStateCommand) {

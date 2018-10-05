@@ -17,6 +17,8 @@ import com.squareup.otto.Subscribe;
 
 import org.apache.commons.lang3.StringUtils;
 
+import info.nightscout.androidaps.Config;
+import info.nightscout.androidaps.plugins.PumpCombo.data.ComboDataUtil;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.PumpState;
 import info.nightscout.androidaps.plugins.PumpCombo.ruffyscripter.history.Bolus;
 import info.nightscout.androidaps.MainApp;
@@ -41,6 +43,8 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
     private Button refreshButton;
     private TextView bolusCount;
     private TextView tbrCount;
+    private TextView connectionErrors;
+    private ComboDataUtil comboDataUtil;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -57,6 +61,9 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
         tempBasalText = view.findViewById(R.id.combo_temp_basal);
         bolusCount = view.findViewById(R.id.combo_bolus_count);
         tbrCount = view.findViewById(R.id.combo_tbr_count);
+	connectionErrors = (TextView) view.findViewById(R.id.combo_connection_error);
+
+        comboDataUtil = ComboDataUtil.getInstance();
 
         refreshButton = view.findViewById(R.id.combo_refresh_button);
         refreshButton.setOnClickListener(this);
@@ -228,6 +235,9 @@ public class ComboFragment extends SubscriberFragment implements View.OnClickLis
                 // stats
                 bolusCount.setText(String.valueOf(SP.getLong(ComboPlugin.COMBO_BOLUSES_DELIVERED, 0L)));
                 tbrCount.setText(String.valueOf(SP.getLong(ComboPlugin.COMBO_TBRS_SET, 0L)));
+
+                // connection errors
+                connectionErrors.setText(comboDataUtil.getErrorString());
             }
         });
     }
